@@ -5,19 +5,22 @@ import bcrypt from "bcrypt";
 import UserModel from "../models/UserModel.mjs";
 
 export default passport.use(
-  new LocalStrategy(async (username, password, done) => {
-    const user = await UserModel.findOne({ email: email });
+  new LocalStrategy(
+    { usernameField: "email", passwordField: "password" },
+    async (email, password, done) => {
+      const user = await UserModel.findOne({ email });
 
-    if (!user)
-      return done(null, false, { errorMessage: "user does not exist" });
+      if (!user)
+        return done(null, false, { errorMessage: "user does not exist" });
 
-    const matchedPassword = await bcrypt.compare(password, user.password);
+      const matchedPassword = await bcrypt.compare(password, user.password);
 
-    if (!matchedPassword)
-      return done(null, false, { errorMessage: "invalid password" });
+      if (!matchedPassword)
+        return done(null, false, { errorMessage: "invalid password" });
 
-    done(null, user);
-  })
+      done(null, user);
+    }
+  )
 );
 
 passport.serializeUser((user, done) => {
